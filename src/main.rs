@@ -1,27 +1,26 @@
-use std::{env};
+use std::env;
 
-
-
-pub mod serve;
-pub mod search;
 pub mod model;
+pub mod search;
+pub mod serve;
 
-
-
-fn show_command(){
+fn show_command() {
     println!("Usage : [program] [command] [sub-command]");
     println!("                   serve  [Directory]   [Address?]");
     println!("                   search [Directory]   [Query]");
 }
 
-fn entry() -> Result<(),()>{
+fn entry() -> Result<(), ()> {
     let mut args = env::args();
     let _ = args.next().expect("Program should be provided");
 
-    let command = args.next().ok_or_else(|| {
-        show_command();
-        println!("Error : Command not provided");
-    }).unwrap();
+    let command = args
+        .next()
+        .ok_or_else(|| {
+            show_command();
+            println!("Error : Command not provided");
+        })
+        .unwrap();
 
     match command.as_str() {
         "serve" => serve::serve_server(&mut args),
@@ -35,10 +34,7 @@ fn entry() -> Result<(),()>{
     Ok(())
 }
 
-
 fn main() {
     //TODO Handle the error properly
-    if let Ok(()) = entry() {
-        
-    }
+    if let Ok(()) = entry() {}
 }

@@ -1,13 +1,11 @@
-
 use std::collections::HashMap;
-use std::{fs, io};
-use std::path::{PathBuf,Path};
 use std::fs::DirEntry;
+use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 type FilePath = String;
 type FileName = String;
 type Point = i32;
-
 
 #[derive(Debug)]
 pub struct Files {
@@ -43,7 +41,7 @@ impl Files {
         Ok(())
     }
 
-    pub fn search(&self, query : String) -> QueryResult {
+    pub fn search(&self, query: String) -> QueryResult {
         let mut find = QueryResult::new();
 
         for (path, name) in &self.files {
@@ -98,25 +96,23 @@ impl Files {
             dir_entry.file_name().to_string_lossy().to_string(),
         );
     }
-
-    
-
-
 }
 
 pub struct QueryResult {
-    pub result : HashMap<FilePath,Point>
+    pub result: HashMap<FilePath, Point>,
 }
 
 impl QueryResult {
-    pub fn new() -> Self{
-        QueryResult {result: HashMap::new()}
+    pub fn new() -> Self {
+        QueryResult {
+            result: HashMap::new(),
+        }
     }
-    pub fn rank(self, quantity : usize  ) -> Vec<(String,i32)>{
-        let mut ranking : Vec<(String,i32)> = self.result.into_iter().collect(); 
-        ranking.sort_by(|pre,curr| curr.1.cmp(&pre.1));
+    pub fn rank(self, quantity: usize) -> Vec<(String, i32)> {
+        let mut ranking: Vec<(String, i32)> = self.result.into_iter().collect();
+        ranking.sort_by(|pre, curr| curr.1.cmp(&pre.1));
 
-        let top : Vec<(String,i32)> = ranking.into_iter().take(quantity).collect();
-        return top ;
-    }   
+        let top: Vec<(String, i32)> = ranking.into_iter().take(quantity).collect();
+        return top;
+    }
 }

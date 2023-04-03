@@ -1,9 +1,11 @@
 async function search(query) {
   const result = await fetch("/api/search", {
     method: "POST",
-    body: query,
+    body: JSON.stringify({
+      query: query,
+      quantity: 10,
+    }),
   });
-
   return await result.json();
 }
 

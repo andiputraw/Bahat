@@ -1,0 +1,8 @@
+{
+  "query": {
+    "exclude": []
+  },
+  "shell": {
+    "open-file": "browse"
+  }
+}
