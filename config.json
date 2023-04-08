@@ -3,6 +3,6 @@
     "exclude": []
   },
   "shell": {
-    "open-file": "browse"
+    "open_in_file": "browse"
   }
 }

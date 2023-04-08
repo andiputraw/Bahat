@@ -3,6 +3,7 @@ use std::env;
 pub mod model;
 pub mod search;
 pub mod serve;
+pub mod utils;
 
 fn show_command() {
     println!("Usage : [program] [command] [sub-command]");
@@ -23,8 +24,8 @@ fn entry() -> Result<(), ()> {
         .unwrap();
 
     match command.as_str() {
-        "serve" => serve::serve_server(&mut args),
-        "search" => search::search_files(&mut args)?,
+        "serve" => serve::serve_server(args),
+        "search" => search::search_files(args)?,
         _ => {
             println!("Undefined command {command}");
             show_command();

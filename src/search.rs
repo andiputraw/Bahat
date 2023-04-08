@@ -4,7 +4,7 @@ use std::path::Path;
 
 //TODO : Use other means to handle error
 
-pub fn search_files(args: &mut Args) -> Result<(), ()> {
+pub fn search_files(mut args: Args) -> Result<(), ()> {
     let dir_path = args.next().expect("Please provide directory path");
 
     let pattern = args.next().expect("Query not provided");
