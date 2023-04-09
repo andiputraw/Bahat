@@ -9,17 +9,17 @@ use std::process::Command;
 
 #[derive(Serialize, Deserialize)]
 pub struct QueryConfig {
-    exclude: Option<Vec<String>>,
+    pub exclude: Option<Vec<String>>,
 }
 #[derive(Serialize, Deserialize)]
 pub struct Shell {
-    open_in_file: String,
+    pub open_in_file: String,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct AppConfig {
-    query: QueryConfig,
-    shell: Shell,
+    pub query: QueryConfig,
+    pub shell: Shell,
 }
 
 pub fn read_config_file() -> Result<AppConfig, String> {

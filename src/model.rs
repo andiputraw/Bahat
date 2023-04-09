@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fs::DirEntry;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
+use super::utils;
 
 type FilePath = String;
 type FileName = String;
@@ -33,12 +34,19 @@ impl Files {
     }
 
     fn insert_files(&mut self, path: &Path) -> io::Result<()> {
+        let config = utils::read_config_file().unwrap();
+
+        let excluded = config.query.exclude.unwrap_or(vec![]);
+
         let directories = fs::read_dir(path)?;
         for dir in directories {
             let dir = dir?;
             let path = dir.path();
 
-            if path.is_dir() {
+            if excluded.contains(&dir.file_name().to_string_lossy().to_string()){                
+
+            }            
+            else if path.is_dir() {
                 self.insert_files(&path)?;
             } else {
                 self.insert(dir);
