@@ -1,13 +1,26 @@
 # Bahat, a simple file searching system
 
-## Todo
+[About](/docs/about.md)
+[Rest](/docs/rest.md)
+[developing](/docs/developing.md)
 
-- Beneran membereskan project ini.✅
-- Implementasi "Fuzzy Searching" (Reference https://www.forrestthewoods.com/blog/reverse_engineering_sublime_texts_fuzzy_match/) . ✅
-- - Tambahkan fitur mencari didalam sebuah folder ("folder/file" syntax). ✅
-- Implementasi Web server untuk UI.✅
-- - Pilih folder yang di query via ui (bukan cli) ✅
-- - Buat dokumentasi untuk RESTfapi.
-- - Highlight huruf yang "match" nya .
-- Implementasi "buka di folder" ✅ dan "preview" ✅ untuk text file.\
-- - support photo
+## Cara pakai
+
+Karena penggunaan library `native dialog`. ada beberapa hal yang mungkin tidak berkerja.
+https://github.com/balthild/native-dialog-rs/issues
+
+- linux
+
+  1. Download Release terakhir
+
+  2. Install dependencies
+
+  ```
+  apt install zenity
+  ```
+
+  3. jalankan menggunakan terminal
+
+  ```
+  bahat serve
+  ```

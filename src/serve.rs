@@ -26,6 +26,7 @@ enum ContentType {
     HTML,
     JS,
     JSON,
+    CSS,
 }
 
 fn create_content_type(content_type: ContentType) -> Header {
@@ -33,6 +34,7 @@ fn create_content_type(content_type: ContentType) -> Header {
         ContentType::HTML => "Content-Type: text/html",
         ContentType::JS => "Content-Type: text/javascript",
         ContentType::JSON => "Content-Type: application/json",
+        ContentType::CSS => "Content-Type: text/css"
     };
 
     Header::from_str(header).unwrap()
@@ -74,6 +76,7 @@ fn url_get(request: Request) {
     match request.url() {
         "/" => serve_file(request, "./public/index.html", ContentType::HTML),
         "/public/js" => serve_file(request, "./public/index.js", ContentType::JS),
+        "/public/css" => serve_file(request, "./public/style.css", ContentType::CSS),
         _ => serve_file(request, "./public/404.html", ContentType::HTML),
     };
 }

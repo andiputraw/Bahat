@@ -1,6 +1,6 @@
 {
   "query": {
-    "exclude": ["node_modules", ".git", "build"]
+    "exclude": []
   },
   "shell": {
     "open_in_file": "browse"
