@@ -15,8 +15,8 @@ ini bisa diakali menggunakan tools seperti scss/tailwind (untuk css) dan webpack
 
 ## Aplikasi
 
-`main.rs` entry point untuk aplikasi, disini tempat mengatur argument yang diberikan
-`model.rs` file yang menyediakan struct `Files` sesuatu yang berhubungan dengan searching.
-`search.rs` file yang mengatur argument `search`
-`serve.rs` file yang mengatur argument `serve`. Routing dan file hosting ada disini
-`utils.rs` utility seperti open dialog box, get preview, parse config, dll
+- `main.rs` entry point untuk aplikasi, disini tempat mengatur argument yang diberikan
+- `model.rs` file yang menyediakan struct `Files` sesuatu yang berhubungan dengan searching.
+- `search.rs` file yang mengatur argument `search`
+- `serve.rs` file yang mengatur argument `serve`. Routing dan file hosting ada disini
+- `utils.rs` utility seperti open dialog box, get preview, parse config, dll
