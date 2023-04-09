@@ -7,7 +7,7 @@ pub mod utils;
 
 fn show_command() {
     println!("Usage : [program] [command] [sub-command]");
-    println!("                   serve  [Directory]   [Address?]");
+    println!("                   serve  [Port?]");
     println!("                   search [Directory]   [Query]");
 }
 

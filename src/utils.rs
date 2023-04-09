@@ -1,7 +1,10 @@
+use super::model::Files;
+use native_dialog::FileDialog;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fs;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[derive(Serialize, Deserialize)]
@@ -39,4 +42,32 @@ pub fn open_file(path: String) -> Result<(), ()> {
         .output()
         .map_err(|_| ())?;
     Ok(())
+}
+
+pub fn open_file_dialog() -> Result<PathBuf, ()> {
+    let dir = FileDialog::new()
+        .show_open_single_dir()
+        .map_err(|_| ())?
+        .expect("Please select a directory");
+
+    Ok(dir)
+}
+
+pub fn get_directory(path: String) -> Result<Files, ()> {
+    let files = Files::build(Path::new(&path)).map_err(|_| ())?;
+
+    Ok(files)
+}
+
+pub fn read_file(path: String) -> Result<String, String> {
+    let path = Path::new(&path);
+    let mut content = String::new();
+    let file = fs::File::open(path).map_err(|_| "Path doesn't exists")?;
+    let mut reader = BufReader::new(file);
+
+    reader
+        .read_to_string(&mut content)
+        .map_err(|_| "Error reading file")?;
+
+    Ok(content)
 }

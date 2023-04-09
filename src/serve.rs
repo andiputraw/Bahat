@@ -1,5 +1,3 @@
-use crate::utils::{read_config_file, AppConfig};
-
 use super::model::Files;
 use super::utils;
 use serde::de::DeserializeOwned;
@@ -14,12 +12,13 @@ use tiny_http::{Header, Request, Response, StatusCode};
 //TODO rename
 #[derive(Serialize, Deserialize)]
 struct QueryFromClient {
+    path: String,
     query: String,
     quantity: usize,
 }
 
 #[derive(Serialize, Deserialize)]
-struct OpenFromClient {
+struct PathFromClient {
     path: String,
 }
 
@@ -40,11 +39,12 @@ fn create_content_type(content_type: ContentType) -> Header {
 }
 
 pub fn serve_server(mut args: Args) {
-    let dir_path = args.next().expect("Please provide directory path");
     let port = args.next().unwrap_or("2128".to_string());
     let address = format!("127.0.0.1:{port}");
 
-    let files = Files::build(Path::new(&dir_path)).unwrap();
+    let files = Files::new();
+
+    let files = files; //TODO Implement Caching. or just use redist instead smh
 
     let server = tiny_http::Server::http(&address).unwrap();
 
@@ -80,28 +80,33 @@ fn url_get(request: Request) {
 
 fn url_post(request: Request, files: &Files) {
     match request.url() {
-        "/api/search" => search(request, &files),
+        "/api/search" => search(request, files),
         "/api/open" => open_in_file(request),
+        "/api/dialog" => open_file_dialog(request), //* This code is blocking the thread */
+        "/api/preview" => preview(request),
         _ => serve_file(request, "./public/404.html", ContentType::HTML),
     }
 }
 
-fn search(mut request: Request, files: &Files) {
-    let mut body_buffer = String::new();
-    request
-        .as_reader()
-        .read_to_string(&mut body_buffer)
-        .unwrap();
-    let query: QueryFromClient = match serde_json::from_str(&body_buffer) {
+fn search<'a>(mut request: Request, files: &Files) {
+    let files = files;
+    let query: QueryFromClient = match get_body_as_struct(&mut request) {
         Ok(v) => v,
-        Err(error) => {
-            let response = response_error(error.to_string());
+        Err(response) => {
             request.respond(response).unwrap();
             return;
         }
     };
 
-    let result = files.search(query.query).rank(query.quantity);
+    //TODO cache here
+
+    let file_to_use = if query.path != files.path.to_string_lossy() {
+        utils::get_directory(query.path).unwrap()
+    } else {
+        files.clone()
+    };
+
+    let result = file_to_use.search(query.query).rank(query.quantity);
 
     let json = json!({ "data": result }).to_string();
 
@@ -115,7 +120,7 @@ fn search(mut request: Request, files: &Files) {
 }
 
 fn open_in_file(mut request: Request) {
-    let query: OpenFromClient = match get_json_body(&mut request) {
+    let query: PathFromClient = match get_body_as_struct(&mut request) {
         Ok(v) => v,
         Err(response) => {
             request.respond(response).unwrap();
@@ -132,6 +137,55 @@ fn open_in_file(mut request: Request) {
         "{{\"status_code\" : 200, \"success\": true}}",
         StatusCode(200),
     );
+
+    match request.respond(response) {
+        Ok(ok) => ok,
+        Err(e) => panic!("Request Invalid {e}"),
+    };
+}
+
+fn open_file_dialog(request: Request) {
+    let path = utils::open_file_dialog()
+        .unwrap()
+        .to_string_lossy()
+        .to_string();
+
+    let data = format!("{{\"status_code\" : 200,\"data\": \"{path}\" ,\"success\": true}}");
+
+    let response = response_success(&data, StatusCode(200));
+
+    match request.respond(response) {
+        Ok(ok) => ok,
+        Err(e) => panic!("Request Invalid {e}"),
+    };
+}
+
+fn preview(mut request: Request) {
+    let body: PathFromClient = match get_body_as_struct(&mut request) {
+        Ok(v) => v,
+        Err(response) => {
+            request.respond(response).unwrap();
+            return;
+        }
+    };
+
+    let content = match utils::read_file(body.path) {
+        Ok(v) => v,
+        Err(err) => {
+            let response = response_error(err);
+            request.respond(response).unwrap();
+            return;
+        }
+    };
+
+    let data = json!({
+        "status_code" : 200,
+        "data" : content,
+        "success" : true
+    })
+    .to_string();
+
+    let response = response_success(&data, StatusCode(200));
 
     match request.respond(response) {
         Ok(ok) => ok,
@@ -172,7 +226,7 @@ fn response_success(
     return response;
 }
 
-fn get_json_body<T>(request: &mut Request) -> Result<T, Response<Cursor<Vec<u8>>>>
+fn get_body_as_struct<T>(request: &mut Request) -> Result<T, Response<Cursor<Vec<u8>>>>
 where
     T: DeserializeOwned,
 {

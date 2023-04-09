@@ -9,16 +9,28 @@
       button {
         display: inline;
       }
+      #path {
+        width: 30rem;
+        margin: 10px 0px;
+      }
     </style>
     <script defer src="/public/js"></script>
   </head>
   <body>
     <h1>Bahat - File Finder</h1>
-
+    <button id="dir">Select Directory</button>
+    <br />
+    <input id="path" type="text" value="" readonly />
+    <br />
+    <label for="query">Keyword</label>
     <input id="query" type="text" />
+    <br />
+    <label for="amount">Amount</label>
     <input id="amount" type="number" />
     <button id="search">Search</button>
 
     <ul id="data"></ul>
+
+    <pre id="preview"></pre>
   </body>
 </html>

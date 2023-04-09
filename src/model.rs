@@ -7,7 +7,7 @@ type FilePath = String;
 type FileName = String;
 type Point = i32;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Files {
     pub files: HashMap<FilePath, FileName>,
     pub path: PathBuf,
@@ -23,6 +23,13 @@ impl Files {
         files.insert_files(path)?;
 
         Ok(files)
+    }
+
+    pub fn new() -> Self {
+        Files {
+            files: HashMap::new(),
+            path: PathBuf::new(),
+        }
     }
 
     fn insert_files(&mut self, path: &Path) -> io::Result<()> {
@@ -42,25 +49,40 @@ impl Files {
     }
 
     pub fn search(&self, query: String) -> QueryResult {
-        let mut find = QueryResult::new();
+        let mut query_result = QueryResult::new();
 
-        for (path, name) in &self.files {
-            let point = Files::find_pattern(
-                &name.chars().collect::<Vec<_>>(),
-                &query.chars().collect::<Vec<_>>(),
-            );
+        if query.contains("/") {
+            for (path, _) in &self.files {
+                let exploded_path: Vec<&str> = path.split("/").collect();
+                let len = exploded_path.len();
 
-            find.result.insert(path.to_string(), point);
+                let folder = exploded_path[len - 2];
+                let file = exploded_path[len - 1];
+                let point = Files::find_folder_pattern(folder, file, &query);
+
+                query_result.result.insert(path.to_string(), point);
+            }
+        } else {
+            for (path, name) in &self.files {
+                let point = Files::find_pattern(
+                    &name.chars().collect::<Vec<_>>(),
+                    &query.chars().collect::<Vec<_>>(),
+                );
+
+                query_result.result.insert(path.to_string(), point);
+            }
         }
 
-        return find;
+        return query_result;
     }
 
     fn find_pattern(name: &[char], pattern: &[char]) -> i32 {
         let mut name_chars = name;
         let mut pattern_chars = pattern;
         let mut point = 0;
+        let mut previously_matched = false;
         let mut prev_char: char = '|';
+        let mut position = 0;
 
         loop {
             if name_chars.is_empty() || pattern_chars.is_empty() {
@@ -68,7 +90,7 @@ impl Files {
             }
             if name_chars[0].to_ascii_lowercase() == pattern_chars[0].to_ascii_lowercase() {
                 point += 0;
-                if prev_char == pattern_chars[0] {
+                if previously_matched {
                     point += 5;
                 }
                 if name_chars[0].is_uppercase() {
@@ -78,16 +100,43 @@ impl Files {
                 if prev_char == '_' || prev_char == '-' || prev_char.is_whitespace() {
                     point += 10;
                 }
-                pattern_chars = &pattern_chars[1..];
-            } else {
-                name_chars = &name_chars[1..];
-                point -= 1;
-            }
 
-            prev_char = *name_chars.get(0).unwrap_or(&'|');
+                prev_char = *name_chars.get(0).unwrap_or(&'|');
+                pattern_chars = &pattern_chars[1..];
+                position += 1;
+                previously_matched = true;
+            } else {
+                if position <= 3 {
+                    point -= 3;
+                }
+                prev_char = *name_chars.get(0).unwrap_or(&'|');
+                point -= 1;
+                position += 1;
+                previously_matched = false;
+            }
+            name_chars = &name_chars[1..];
         }
 
         return point;
+    }
+
+    fn find_folder_pattern(folder: &str, file: &str, pattern: &str) -> i32 {
+        let exploded_pattern: Vec<&str> = pattern.split("/").collect();
+
+        let len = exploded_pattern.len();
+        let folder_query = exploded_pattern[len - 2];
+        let file_query = exploded_pattern[len - 1];
+
+        let folder_point = Files::find_pattern(
+            &folder.chars().collect::<Vec<_>>(),
+            &folder_query.chars().collect::<Vec<_>>(),
+        );
+        let file_point = Files::find_pattern(
+            &file.chars().collect::<Vec<_>>(),
+            &file_query.chars().collect::<Vec<_>>(),
+        );
+
+        folder_point * 2 + file_point
     }
 
     fn insert(&mut self, dir_entry: DirEntry) {
@@ -113,6 +162,7 @@ impl QueryResult {
         ranking.sort_by(|pre, curr| curr.1.cmp(&pre.1));
 
         let top: Vec<(String, i32)> = ranking.into_iter().take(quantity).collect();
+
         return top;
     }
 }
